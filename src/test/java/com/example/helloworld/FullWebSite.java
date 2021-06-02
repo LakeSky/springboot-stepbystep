@@ -106,6 +106,12 @@ public class FullWebSite {
         if (url.endsWith("/")) {
             return null;
         }
+        //有的根本就不是文件，而是一些路径，这些要过滤掉
+        int lastSlash = url.lastIndexOf("/");
+        String endPath = url.substring(lastSlash);
+        if (!endPath.contains(".")) {
+            return null;
+        }
         System.out.println("path:" + url);
         return url;
     }
