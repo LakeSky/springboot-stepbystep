@@ -19,6 +19,9 @@ public class FullWebSite {
     public void display() throws Exception {
         String saveDir = "F:\\try\\scraw";
         String site = "http://www.mutou888.com";
+        String siteDir = site.replace("http://", "");
+        siteDir = siteDir.replace("https://", "");
+        saveDir = saveDir + File.separator + siteDir;
         Document doc = Jsoup.connect(site).get();
         String html = doc.html();
         String baseUri = doc.baseUri();
@@ -60,9 +63,24 @@ public class FullWebSite {
             FileUtil.writeBytes(content.getBytes(), path);
             System.out.println(element.attr("src"));
         }
-        FileUtil.writeBytes(html.getBytes(), saveDir+File.separator+"index.html");
-//        System.out.println(html);
 
+        Elements images = doc.select("img");
+        for (Element element : images) {
+            String src = element.attr("src");
+            if (StrUtil.isEmpty(src)) {
+                continue;
+            }
+            if (!src.startsWith("http") && !src.startsWith("/")) {
+                src = baseUri + "/" + src;
+            }
+            if (src.startsWith("/")) {
+                src = site + src;
+            }
+            String path = saveDir + File.separator + src.replace(site, "");
+            HttpUtil.downloadFile(src, path);
+        }
+        FileUtil.writeBytes(html.getBytes(), saveDir+File.separator+"index.html");
+        System.out.println(html);
     }
 
     public void saveResource(String site, String baseUri, String url, String saveDir) {
