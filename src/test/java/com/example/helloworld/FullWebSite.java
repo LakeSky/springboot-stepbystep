@@ -27,7 +27,6 @@ public class FullWebSite {
         siteDir = siteDir.replace("https://", "");
         saveDir = saveDir + File.separator + siteDir;
         Document doc = Jsoup.connect(site).get();
-        String html = doc.html();
         String baseUri = doc.baseUri();
         System.out.println(baseUri);
         Elements links = doc.select("link");
@@ -36,56 +35,57 @@ public class FullWebSite {
             if (StrUtil.isEmpty(href)) {
                 continue;
             }
+            element.attr("href", urlToPath(href,site));
             href = fixUrl(href, site, baseUri);
             String linkContent = HttpUtil.get(href);
-            String navPath = urlToPath(href, site);
+            String navPath = urlToSavePath(href, site);
             if (StrUtil.isEmpty(navPath)) {
                 continue;
             }
             String path = saveDir + File.separator + navPath;
-            System.out.println(path);
             FileUtil.mkParentDirs(path);
             FileUtil.writeBytes(linkContent.getBytes(), path);
-            System.out.println(element.attr("href"));
         }
 
         Elements scripts = doc.select("script");
         for (Element element : scripts) {
             String src = element.attr("src");
+            element.attr("src", urlToPath(src, site));
             if (StrUtil.isEmpty(src)) {
                 continue;
             }
             src = fixUrl(src, site, baseUri);
             String content = HttpUtil.get(src);
-            String navPath = urlToPath(src, site);
+            String navPath = urlToSavePath(src, site);
             if (StrUtil.isEmpty(navPath)) {
                 continue;
             }
             String path = saveDir + File.separator + navPath;
             FileUtil.mkParentDirs(path);
             FileUtil.writeBytes(content.getBytes(), path);
-            System.out.println(element.attr("src"));
         }
 
         Elements images = doc.select("img");
         for (Element element : images) {
             String src = element.attr("src");
+            element.attr("src", urlToPath(src, site));
             if (StrUtil.isEmpty(src)) {
                 continue;
             }
             src = fixUrl(src, site, baseUri);
-            String navPath = urlToPath(src, site);
+            String navPath = urlToSavePath(src, site);
             if (StrUtil.isEmpty(navPath)) {
                 continue;
             }
             String path = saveDir + File.separator + navPath;
             HttpUtil.downloadFile(src, path);
         }
+        String html = doc.html();
         FileUtil.writeBytes(html.getBytes(), saveDir+File.separator+"index.html");
         System.out.println(html);
     }
 
-    public String urlToPath(String url, String site) {
+    public String urlToSavePath(String url, String site) {
         url = url.replace(site, "");
         if (url.startsWith("/")) {
             url = url.substring(0, url.length() - 1);
@@ -111,6 +111,34 @@ public class FullWebSite {
         String endPath = url.substring(lastSlash);
         if (!endPath.contains(".")) {
             return null;
+        }
+        if (url.startsWith("/")) {
+            url = url.substring(1);
+        }
+        System.out.println("path:" + url);
+        return url;
+    }
+
+    public String urlToPath(String url, String site) {
+        url = url.replace(site, "");
+        if (url.startsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        //外站连接不处理
+        if (url.startsWith("http")) {
+            return "";
+        }
+        if (StrUtil.isEmpty(url)) {
+            return url;
+        }
+        //如果url里面的内容不是以文件名结尾的，比如/css/dist/block-library/style.min.css?ver=a8fe96efb5165c1a8cbca34c4840851
+        if (url.contains("?")) {
+            int indexOf = url.indexOf("?");
+            url = url.substring(0, indexOf);
+        }
+
+        if (url.startsWith("/")) {
+            url = url.substring(1);
         }
         System.out.println("path:" + url);
         return url;
