@@ -20,6 +20,7 @@ public class FullWebSite {
     public void display() throws Exception {
         String saveDir = "F:\\try\\scraw";
         String site = "https://www.rescuespa.com/";
+        site = "http://www.mutou888.com/";
         if (site.endsWith("/")) {
             site = site.substring(0, site.length() - 1);
         }
@@ -88,7 +89,7 @@ public class FullWebSite {
     public String urlToSavePath(String url, String site) {
         url = url.replace(site, "");
         if (url.startsWith("/")) {
-            url = url.substring(0, url.length() - 1);
+            url = url.substring(1);
         }
         //外站连接不处理
         if (url.startsWith("http")) {
@@ -112,9 +113,6 @@ public class FullWebSite {
         if (!endPath.contains(".")) {
             return null;
         }
-        if (url.startsWith("/")) {
-            url = url.substring(1);
-        }
         System.out.println("path:" + url);
         return url;
     }
@@ -122,7 +120,7 @@ public class FullWebSite {
     public String urlToPath(String url, String site) {
         url = url.replace(site, "");
         if (url.startsWith("/")) {
-            url = url.substring(0, url.length() - 1);
+            url = url.substring(1);
         }
         //外站连接不处理
         if (url.startsWith("http")) {
@@ -135,10 +133,6 @@ public class FullWebSite {
         if (url.contains("?")) {
             int indexOf = url.indexOf("?");
             url = url.substring(0, indexOf);
-        }
-
-        if (url.startsWith("/")) {
-            url = url.substring(1);
         }
         System.out.println("path:" + url);
         return url;
