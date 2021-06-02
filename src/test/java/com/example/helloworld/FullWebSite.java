@@ -44,10 +44,10 @@ public class FullWebSite {
                 if (StrUtil.isEmpty(href)) {
                     continue;
                 }
-                element.attr("href", urlToPath(href, site));
+                element.attr("href", urlToPath(href, baseUri));
                 href = fixUrl(href, baseUri);
                 String linkContent = HttpUtil.get(href);
-                String navPath = urlToSavePath(href, site);
+                String navPath = urlToSavePath(href, baseUri);
                 if (StrUtil.isEmpty(navPath)) {
                     continue;
                 }
@@ -63,13 +63,13 @@ public class FullWebSite {
             Elements scripts = doc.select("script");
             for (Element element : scripts) {
                 String src = element.attr("src");
-                element.attr("src", urlToPath(src, site));
+                element.attr("src", urlToPath(src, baseUri));
                 if (StrUtil.isEmpty(src)) {
                     continue;
                 }
                 src = fixUrl(src, baseUri);
                 String content = HttpUtil.get(src);
-                String navPath = urlToSavePath(src, site);
+                String navPath = urlToSavePath(src, baseUri);
                 if (StrUtil.isEmpty(navPath)) {
                     continue;
                 }
@@ -85,12 +85,12 @@ public class FullWebSite {
             Elements images = doc.select("img");
             for (Element element : images) {
                 String src = element.attr("src");
-                element.attr("src", urlToPath(src, site));
+                element.attr("src", urlToPath(src, baseUri));
                 if (StrUtil.isEmpty(src)) {
                     continue;
                 }
                 src = fixUrl(src, baseUri);
-                String navPath = urlToSavePath(src, site);
+                String navPath = urlToSavePath(src, baseUri);
                 if (StrUtil.isEmpty(navPath)) {
                     continue;
                 }
