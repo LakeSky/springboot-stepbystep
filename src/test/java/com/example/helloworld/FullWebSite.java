@@ -26,17 +26,14 @@ public class FullWebSite {
     }
 
     //将网页保存到本地 String site = "https://www.rescuespa.com/";String saveDir = "F:\\try\\scraw";
-    public static void savePage(String site, String saveDir) {
-        if (site.endsWith("/")) {
-            site = site.substring(0, site.length() - 1);
-        }
-        String siteDir = site.replace("http://", "");
-        siteDir = siteDir.replace("https://", "");
-        saveDir = saveDir + File.separator + siteDir;
+    public static void savePage(String url, String saveDir) {
         Document doc = null;
         try {
-            doc = Jsoup.connect(site).get();
+            doc = Jsoup.connect(url).get();
             String baseUri = doc.baseUri();
+            String siteDir = baseUri.replace("http://", "");
+            siteDir = siteDir.replace("https://", "");
+            saveDir = saveDir + File.separator + siteDir;
             System.out.println(baseUri);
             Elements links = doc.select("link");
             for (Element element : links) {
