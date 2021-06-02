@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by gang on 2021/6/2.
@@ -21,73 +22,95 @@ public class FullWebSite {
         String saveDir = "F:\\try\\scraw";
         String site = "https://www.rescuespa.com/";
         site = "http://www.mutou888.com/";
+        savePage(site,saveDir);
+    }
+
+    //将网页保存到本地 String site = "https://www.rescuespa.com/";String saveDir = "F:\\try\\scraw";
+    public static void savePage(String site, String saveDir) {
         if (site.endsWith("/")) {
             site = site.substring(0, site.length() - 1);
         }
         String siteDir = site.replace("http://", "");
         siteDir = siteDir.replace("https://", "");
         saveDir = saveDir + File.separator + siteDir;
-        Document doc = Jsoup.connect(site).get();
-        String baseUri = doc.baseUri();
-        System.out.println(baseUri);
-        Elements links = doc.select("link");
-        for (Element element : links) {
-            String href = element.attr("href");
-            if (StrUtil.isEmpty(href)) {
-                continue;
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(site).get();
+            String baseUri = doc.baseUri();
+            System.out.println(baseUri);
+            Elements links = doc.select("link");
+            for (Element element : links) {
+                String href = element.attr("href");
+                if (StrUtil.isEmpty(href)) {
+                    continue;
+                }
+                element.attr("href", urlToPath(href, site));
+                href = fixUrl(href, baseUri);
+                String linkContent = HttpUtil.get(href);
+                String navPath = urlToSavePath(href, site);
+                if (StrUtil.isEmpty(navPath)) {
+                    continue;
+                }
+                String path = saveDir + File.separator + navPath;
+                File pathFile = new File(path);
+                if (pathFile.exists()) {
+                    continue;
+                }
+                FileUtil.mkParentDirs(path);
+                FileUtil.writeBytes(linkContent.getBytes(), path);
             }
-            element.attr("href", urlToPath(href,site));
-            href = fixUrl(href, site, baseUri);
-            String linkContent = HttpUtil.get(href);
-            String navPath = urlToSavePath(href, site);
-            if (StrUtil.isEmpty(navPath)) {
-                continue;
-            }
-            String path = saveDir + File.separator + navPath;
-            FileUtil.mkParentDirs(path);
-            FileUtil.writeBytes(linkContent.getBytes(), path);
-        }
 
-        Elements scripts = doc.select("script");
-        for (Element element : scripts) {
-            String src = element.attr("src");
-            element.attr("src", urlToPath(src, site));
-            if (StrUtil.isEmpty(src)) {
-                continue;
+            Elements scripts = doc.select("script");
+            for (Element element : scripts) {
+                String src = element.attr("src");
+                element.attr("src", urlToPath(src, site));
+                if (StrUtil.isEmpty(src)) {
+                    continue;
+                }
+                src = fixUrl(src, baseUri);
+                String content = HttpUtil.get(src);
+                String navPath = urlToSavePath(src, site);
+                if (StrUtil.isEmpty(navPath)) {
+                    continue;
+                }
+                String path = saveDir + File.separator + navPath;
+                File pathFile = new File(path);
+                if (pathFile.exists()) {
+                    continue;
+                }
+                FileUtil.mkParentDirs(path);
+                FileUtil.writeBytes(content.getBytes(), path);
             }
-            src = fixUrl(src, site, baseUri);
-            String content = HttpUtil.get(src);
-            String navPath = urlToSavePath(src, site);
-            if (StrUtil.isEmpty(navPath)) {
-                continue;
-            }
-            String path = saveDir + File.separator + navPath;
-            FileUtil.mkParentDirs(path);
-            FileUtil.writeBytes(content.getBytes(), path);
-        }
 
-        Elements images = doc.select("img");
-        for (Element element : images) {
-            String src = element.attr("src");
-            element.attr("src", urlToPath(src, site));
-            if (StrUtil.isEmpty(src)) {
-                continue;
+            Elements images = doc.select("img");
+            for (Element element : images) {
+                String src = element.attr("src");
+                element.attr("src", urlToPath(src, site));
+                if (StrUtil.isEmpty(src)) {
+                    continue;
+                }
+                src = fixUrl(src, baseUri);
+                String navPath = urlToSavePath(src, site);
+                if (StrUtil.isEmpty(navPath)) {
+                    continue;
+                }
+                String path = saveDir + File.separator + navPath;
+                File pathFile = new File(path);
+                if (pathFile.exists()) {
+                    continue;
+                }
+                HttpUtil.downloadFile(src, path);
             }
-            src = fixUrl(src, site, baseUri);
-            String navPath = urlToSavePath(src, site);
-            if (StrUtil.isEmpty(navPath)) {
-                continue;
-            }
-            String path = saveDir + File.separator + navPath;
-            HttpUtil.downloadFile(src, path);
+            String html = doc.html();
+            FileUtil.writeBytes(html.getBytes(), saveDir + File.separator + "index.html");
+            System.out.println(html);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        String html = doc.html();
-        FileUtil.writeBytes(html.getBytes(), saveDir+File.separator+"index.html");
-        System.out.println(html);
     }
 
-    public String urlToSavePath(String url, String site) {
-        url = url.replace(site, "");
+    public static String urlToSavePath(String url, String baseUri) {
+        url = url.replace(baseUri, "");
         if (url.startsWith("/")) {
             url = url.substring(1);
         }
@@ -117,8 +140,8 @@ public class FullWebSite {
         return url;
     }
 
-    public String urlToPath(String url, String site) {
-        url = url.replace(site, "");
+    public static String urlToPath(String url, String baseUri) {
+        url = url.replace(baseUri, "");
         if (url.startsWith("/")) {
             url = url.substring(1);
         }
@@ -138,13 +161,13 @@ public class FullWebSite {
         return url;
     }
 
-    public static String fixUrl(String url, String site, String baseUri) {
+    public static String fixUrl(String url, String baseUri) {
         System.out.println("fixUrl:" + url);
         if (!url.startsWith("http") && !url.startsWith("/")) {
             url = baseUri + "/" + url;
         }
         if (url.startsWith("/")) {
-            url = site + url;
+            url = baseUri + "/" + url;
         }
         return url;
     }
