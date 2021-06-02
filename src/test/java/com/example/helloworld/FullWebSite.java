@@ -18,7 +18,10 @@ public class FullWebSite {
     @Test
     public void display() throws Exception {
         String saveDir = "F:\\try\\scraw";
-        String site = "http://www.mutou888.com";
+        String site = "https://www.rescuespa.com/";
+        if (site.endsWith("/")) {
+            site = site.substring(0, site.length() - 1);
+        }
         String siteDir = site.replace("http://", "");
         siteDir = siteDir.replace("https://", "");
         saveDir = saveDir + File.separator + siteDir;
@@ -32,14 +35,13 @@ public class FullWebSite {
             if (StrUtil.isEmpty(href)) {
                 continue;
             }
-            if (!href.startsWith("http") && !href.startsWith("/")) {
-                href = baseUri + "/" + href;
-            }
-            if (href.startsWith("/")) {
-                href = site + href;
-            }
+            href = fixUrl(href, site, baseUri);
             String linkContent = HttpUtil.get(href);
-            String path = saveDir + File.separator + href.replace(site, "");
+            String navPath = urlToPath(href, site);
+            if (StrUtil.isEmpty(navPath)) {
+                continue;
+            }
+            String path = saveDir + File.separator + navPath;
             FileUtil.mkParentDirs(path);
             FileUtil.writeBytes(linkContent.getBytes(), path);
             System.out.println(element.attr("href"));
@@ -51,12 +53,7 @@ public class FullWebSite {
             if (StrUtil.isEmpty(src)) {
                 continue;
             }
-            if (!src.startsWith("http") && !src.startsWith("/")) {
-                src = baseUri + "/" + src;
-            }
-            if (src.startsWith("/")) {
-                src = site + src;
-            }
+            src = fixUrl(src, site, baseUri);
             String content = HttpUtil.get(src);
             String path = saveDir + File.separator + src.replace(site, "");
             FileUtil.mkParentDirs(path);
@@ -70,12 +67,7 @@ public class FullWebSite {
             if (StrUtil.isEmpty(src)) {
                 continue;
             }
-            if (!src.startsWith("http") && !src.startsWith("/")) {
-                src = baseUri + "/" + src;
-            }
-            if (src.startsWith("/")) {
-                src = site + src;
-            }
+            src = fixUrl(src, site, baseUri);
             String path = saveDir + File.separator + src.replace(site, "");
             HttpUtil.downloadFile(src, path);
         }
@@ -83,16 +75,22 @@ public class FullWebSite {
         System.out.println(html);
     }
 
-    public void saveResource(String site, String baseUri, String url, String saveDir) {
+    public String urlToPath(String url, String site) {
+        url = url.replace(site, "");
+        if (url.startsWith("http")) {
+            System.out.println(url);
+            return null;
+        }
+        return url;
+    }
+
+    public static String fixUrl(String url, String site, String baseUri) {
         if (!url.startsWith("http") && !url.startsWith("/")) {
             url = baseUri + "/" + url;
         }
         if (url.startsWith("/")) {
             url = site + url;
         }
-        String linkContent = HttpUtil.get(url);
-        String path = saveDir + File.separator + url.replace(site, "");
-        FileUtil.mkParentDirs(path);
-        FileUtil.writeBytes(linkContent.getBytes(), path);
+        return url;
     }
 }
