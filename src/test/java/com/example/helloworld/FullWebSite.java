@@ -15,6 +15,7 @@ import java.io.File;
  * Created by gang on 2021/6/2.
  */
 public class FullWebSite {
+
     @Test
     public void display() throws Exception {
         String saveDir = "F:\\try\\scraw";
@@ -42,6 +43,7 @@ public class FullWebSite {
                 continue;
             }
             String path = saveDir + File.separator + navPath;
+            System.out.println(path);
             FileUtil.mkParentDirs(path);
             FileUtil.writeBytes(linkContent.getBytes(), path);
             System.out.println(element.attr("href"));
@@ -55,7 +57,11 @@ public class FullWebSite {
             }
             src = fixUrl(src, site, baseUri);
             String content = HttpUtil.get(src);
-            String path = saveDir + File.separator + src.replace(site, "");
+            String navPath = urlToPath(src, site);
+            if (StrUtil.isEmpty(navPath)) {
+                continue;
+            }
+            String path = saveDir + File.separator + navPath;
             FileUtil.mkParentDirs(path);
             FileUtil.writeBytes(content.getBytes(), path);
             System.out.println(element.attr("src"));
@@ -68,7 +74,11 @@ public class FullWebSite {
                 continue;
             }
             src = fixUrl(src, site, baseUri);
-            String path = saveDir + File.separator + src.replace(site, "");
+            String navPath = urlToPath(src, site);
+            if (StrUtil.isEmpty(navPath)) {
+                continue;
+            }
+            String path = saveDir + File.separator + navPath;
             HttpUtil.downloadFile(src, path);
         }
         FileUtil.writeBytes(html.getBytes(), saveDir+File.separator+"index.html");
@@ -77,14 +87,31 @@ public class FullWebSite {
 
     public String urlToPath(String url, String site) {
         url = url.replace(site, "");
+        if (url.startsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        //外站连接不处理
         if (url.startsWith("http")) {
-            System.out.println(url);
             return null;
         }
+        if (StrUtil.isEmpty(url)) {
+            return url;
+        }
+        //如果url里面的内容不是以文件名结尾的，比如/css/dist/block-library/style.min.css?ver=a8fe96efb5165c1a8cbca34c4840851
+        if (url.contains("?")) {
+            int indexOf = url.indexOf("?");
+            url = url.substring(0, indexOf);
+        }
+        //url以/结尾，这样的不处理wp-json/wp/v2/pages/
+        if (url.endsWith("/")) {
+            return null;
+        }
+        System.out.println("path:" + url);
         return url;
     }
 
     public static String fixUrl(String url, String site, String baseUri) {
+        System.out.println("fixUrl:" + url);
         if (!url.startsWith("http") && !url.startsWith("/")) {
             url = baseUri + "/" + url;
         }
