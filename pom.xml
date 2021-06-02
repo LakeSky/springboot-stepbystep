@@ -35,6 +35,22 @@
 
     <dependencies>
         <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.6.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.htmlcompressor</groupId>
+            <artifactId>htmlcompressor</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yahoo.platform.yui</groupId>
+            <artifactId>yuicompressor</artifactId>
+            <version>2.4.8</version>
+        </dependency>
+        
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
