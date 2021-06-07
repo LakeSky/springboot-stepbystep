@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by gang on 2021/6/2.
@@ -22,7 +24,17 @@ public class FullWebSite {
         String saveDir = "F:\\try\\scraw";
         String site = "https://www.rescuespa.com/";
         site = "http://www.mutou888.com/";
-        savePage(site,saveDir);
+        //主要是对那些大的标题页面进行抓取，其他的页面就不管了。
+        List<String> urls = new ArrayList<>();
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(site).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (String url : urls) {
+            savePage(url, saveDir);
+        }
     }
 
     //将网页保存到本地 String site = "https://www.rescuespa.com/";String saveDir = "F:\\try\\scraw";
